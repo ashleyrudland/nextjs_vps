@@ -1,0 +1,7 @@
+next
+node_modules
+.next/
+db.sqlite3
+.env
+.env*
+!.env.erb

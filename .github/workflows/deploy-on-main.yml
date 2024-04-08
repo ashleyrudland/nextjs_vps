@@ -1,0 +1,54 @@
+name: CD
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    Deploy:
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        runs-on: ubuntu-latest
+
+        env:
+            DOCKER_BUILDKIT: 1
+            KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
+            KAMAL_REGISTRY_USERNAME: ${{ secrets.KAMAL_REGISTRY_USERNAME }}
+            VPS_IP: ${{ secrets.VPS_IP }}
+            # Use the same ssh-agent socket value across all jobs
+            SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Set up Ruby
+              uses: ruby/setup-ruby@v1
+              with:
+                  ruby-version: 3.2.2
+                  bundler-cache: true
+
+            - name: Install dependencies
+              run: |
+                  gem install specific_install
+                  gem specific_install https://github.com/basecamp/kamal.git
+
+            - name: Setup SSH with a passphrase
+              env:
+                  SSH_PASSPHRASE: ${{secrets.SSH_PASSPHRASE}}
+                  SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
+              run: |
+                  ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+                  echo "echo $SSH_PASSPHRASE" > ~/.ssh_askpass && chmod +x ~/.ssh_askpass
+                  echo "$SSH_PRIVATE_KEY" | tr -d '\r' | DISPLAY=None SSH_ASKPASS=~/.ssh_askpass ssh-add - >/dev/null
+
+            # - uses: webfactory/ssh-agent@v0.7.0
+            #   with:
+            #     ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+            - name: Set up Docker Buildx
+              id: buildx
+              uses: docker/setup-buildx-action@v2
+
+            - name: Run deploy command
+              run: kamal deploy

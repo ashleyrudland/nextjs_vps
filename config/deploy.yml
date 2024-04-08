@@ -1,0 +1,13 @@
+# config/deploy.yml
+service: server
+image: ashleyrudland87/ash
+servers:
+    - 165.227.233.54
+registry:
+    username:
+        - KAMAL_REGISTRY_USERNAME
+    password:
+        - KAMAL_REGISTRY_PASSWORD
+port: 3000
+volumes:
+  - "data:/data"
