@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 
 	telemetry.sort((a, b) => a.when.getTime() - b.when.getTime());
 
-	if (telemetry.length > 100) {
+	if (telemetry.length > 30) {
 		telemetry = takeRight(telemetry, 100);
 	}
 
