@@ -83,6 +83,10 @@ const DbTest = () => {
 					)}
 					{!loading && result && (
 						<ul>
+							<li className="font-bold text-foreground">
+								Reads/sec:{' '}
+								{result.readsPerSecond.toLocaleString()}
+							</li>
 							<li>Writes: {result.writes.toLocaleString()}</li>
 							<li>
 								Write time: {result.writeTime.toLocaleString()}

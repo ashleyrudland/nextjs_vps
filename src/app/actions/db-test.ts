@@ -28,6 +28,8 @@ export default async function dbTest() {
 	let error = null;
 	let failureRate = 0;
 	let failures = 0;
+	let reads = 0;
+	let readsPerSecond = 0;
 	let writes = 0;
 	let writesPerSecond = 0;
 	let writeTime = 0;
@@ -61,6 +63,17 @@ export default async function dbTest() {
 		const deleteStart = Date.now();
 		failureRate = Math.round((failures / writes) * 100);
 
+		// reads/sec
+		const readStart = Date.now();
+		await throttleExec(newRecords, async newId => {
+			await db.query.comments.findFirst({
+				where: eq(comments.id, newId),
+			});
+			reads += 1;
+		});
+		const readTime = Date.now() - readStart;
+		readsPerSecond = Math.round(reads / (readTime / 1000));
+
 		// delete records inserted to clean up
 		await throttleExec(newRecords, newId =>
 			db.delete(comments).where(eq(comments.id, newId)),
@@ -75,9 +88,11 @@ export default async function dbTest() {
 	}
 
 	return {
-		error,
 		deleteTime,
+		error,
 		failureRate,
+		reads,
+		readsPerSecond,
 		writes,
 		writesPerSecond,
 		writeTime,
