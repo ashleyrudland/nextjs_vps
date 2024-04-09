@@ -2,7 +2,7 @@
 service: server
 image: ashleyrudland87/ash
 servers:
-    - 165.227.233.54
+    - 195.201.25.22
 registry:
     username:
         - KAMAL_REGISTRY_USERNAME
