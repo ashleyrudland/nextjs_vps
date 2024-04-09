@@ -17,13 +17,13 @@ const DbTest = () => {
 	const [startTime, setStartTime] = useState(0);
 	const [runningTime, setRunningTime] = useState(0);
 
-	const runTest = useCallback(async (refresh = false) => {
+	const runTest = useCallback(async () => {
 		setRunningTime(0);
 		setStartTime(Date.now());
 		setLoading(true);
 		setError(null);
 		setResult(null);
-		dbTest(refresh)
+		dbTest()
 			.then(res => {
 				setResult(res);
 				setError(res.error);
