@@ -51,7 +51,7 @@ export default async function dbTest(refresh = false) {
 
 	try {
 		const values: Comment[] = Array.from(
-			{ length: 10000 },
+			{ length: 30000 },
 			() =>
 				({
 					author: Math.random().toString(36).substring(7),

@@ -1,6 +1,6 @@
 # Do we need Vercel? Can we just run our NextJS apps on a VM? Maybe all our apps on one machine?
 
-I love NextJS, but I don't like Vercels pricing. It seems nuts to me and it seems many other people do too. So I spent a few hours playing with this and Digital Ocean to see what was possible.
+I love NextJS, but I don't like Vercels pricing. It seems nuts to me and it seems many other people do too. So I spent a few hours playing with this and ~~Digital Ocean~~ Hetzner Cloud (€3.30/mo 🤣) to see what was possible.
 
 All thanks goes to [kamal](https://github.com/basecamp/kamal) and @ImSh4yy, I built this using his [post](https://logsnag.com/blog/self-host-nextjs-hetzner-kamal) 🙏
 
