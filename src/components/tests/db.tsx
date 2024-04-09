@@ -2,7 +2,6 @@
 
 import { useCallback, useState, useEffect } from 'react';
 
-import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { TestCard } from '@/components/ui/test-card';
 
@@ -111,14 +110,6 @@ const DbTest = () => {
 					)}
 				</>
 			}
-
-			// viral tweet broke this on the baby VM
-			// so we need to disable it for now
-			// loading ? null : (
-			// footer={	<Button onClick={() => runTest(true)}>
-			// 		Run test again
-			// 	</Button>}
-			//
 		/>
 	);
 };
