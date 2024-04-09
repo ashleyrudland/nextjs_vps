@@ -1,6 +1,8 @@
+import { cookies } from 'next/headers';
 import os from 'os';
 
 export async function GET() {
+	cookies().get('auth');
 	let start = Date.now();
 	const platform = `${os.platform()}, ${os.arch()}, ${os.release()}`;
 	console.log('platform took', Date.now() - start);

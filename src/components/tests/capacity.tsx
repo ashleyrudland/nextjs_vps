@@ -43,17 +43,17 @@ const Capacity = () => {
 
 		let timeout: NodeJS.Timeout | null = null;
 
-		fetch('/up')
+		fetch(`/up?cacheBuster=${Math.random()}`)
 			.then(res => res.json())
 			.then(res => setUptime(res.uptime))
 			.catch(() => setError('Failed to fetch uptime'));
-		fetch('/api/vm/device')
+		fetch(`/api/vm/device?cacheBuster=${Math.random()}`)
 			.then(res => res.json())
 			.then(res => setDevice(res))
 			.catch(() => setError('Failed to fetch device info'));
 
 		const getUsage = () => {
-			fetch('/api/vm/usage')
+			fetch(`/api/vm/usage?cacheBuster=${Math.random()}`)
 				.then(res => res.json())
 				.then(res => {
 					setUsage(res.telemetry);
