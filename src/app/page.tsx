@@ -1,10 +1,6 @@
-import moment from 'moment';
-
 import Capacity from '@/components/tests/capacity';
 import DbTest from '@/components/tests/db';
 import Images from '@/components/tests/images';
-
-const buildTime = moment().fromNow();
 
 export default function Home() {
 	return (
@@ -35,8 +31,6 @@ export default function Home() {
 				hours playing with this and Digital Ocean to see what was
 				possible.
 			</p>
-
-			<p>Built last at: {buildTime}</p>
 
 			<div className="flex flex-col gap-6 sm:flex-row sm:gap-10">
 				<DbTest />
