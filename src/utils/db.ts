@@ -7,6 +7,8 @@ const sqlite = new Database(
 	process.env.NODE_ENV === 'production' ? '/data/db.sqlite3' : './db.sqlite3',
 );
 
+sqlite.pragma('journal_mode = WAL');
+
 export const db = drizzle(sqlite, { schema });
 
 migrate(db, { migrationsFolder: './drizzle' });
