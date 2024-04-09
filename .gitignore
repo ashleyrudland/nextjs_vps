@@ -1,7 +1,7 @@
 next
 node_modules
 .next/
-db.sqlite3
+db.sqlite*
 .env
 .env*
 !.env.erb
