@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { TestCard } from '@/components/ui/test-card';
 
-import dbTest from '@/app/actions/db-test';
+import { dbTest } from '@/app/actions/db-test';
 
 const DbTest = () => {
 	const [loading, setLoading] = useState(true);
