@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { TestCard } from '@/components/ui/test-card';
 
-import dbTest from '@/app/actions/db-test';
+import { dbTest } from '@/app/actions/db-test';
 
 const DbTest = () => {
 	const [loading, setLoading] = useState(true);
@@ -17,13 +17,13 @@ const DbTest = () => {
 	const [startTime, setStartTime] = useState(0);
 	const [runningTime, setRunningTime] = useState(0);
 
-	const runTest = useCallback(async (refresh = false) => {
+	const runTest = useCallback(async () => {
 		setRunningTime(0);
 		setStartTime(Date.now());
 		setLoading(true);
 		setError(null);
 		setResult(null);
-		dbTest(refresh)
+		dbTest()
 			.then(res => {
 				setResult(res);
 				setError(res.error);

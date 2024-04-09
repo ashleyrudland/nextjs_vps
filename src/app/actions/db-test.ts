@@ -1,31 +1,102 @@
 'use server';
 
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import chunk from 'lodash.chunk';
-import { serializeError } from 'serialize-error';
-
 import { comments } from '@/models/schema';
 import { db } from '@/utils/db';
 import { Comment } from '@/models/types';
 
+import { createStaleWhileRevalidateCache } from 'stale-while-revalidate-cache';
+
+/**
+ * Executes an asynchronous function on chunks of an array concurrently.
+ * @param array The array to be processed.
+ * @param asyncFn The asynchronous function to be executed on each element of the array.
+ * @param chunkSize The size of each chunk. Defaults to 50.
+ * @returns A Promise that resolves when all chunks have been processed.
+ */
 export const throttleExec = async <T, R>(
 	array: T[],
 	asyncFn: (id: T) => Promise<R>,
-	chunkSize = 100,
+	chunkSize = 50,
 ) => {
 	const chunks = chunk(array, chunkSize);
-	let i = 0;
-	const len = chunks.length;
-	let item = null;
-	for (; i < len; i += 1) {
-		item = chunks[i];
+	for (const item of chunks) {
 		await Promise.allSettled(item.map(asyncFn));
 	}
 };
 
-// ash: 9 april 24 16:49: too many requests from Twitter broke the app
-// so I'm hardcoding the last test results 🤣🤣🤣
-let lastTest: {
+/**
+ * Inserts multiple comments into the database.
+ * @param values An array of Comment objects to be inserted.
+ * @returns An object containing the IDs of the new records, the number of writes, and the number of failures.
+ */
+async function insertComments(values: Comment[]) {
+	const newRecords: number[] = [];
+	let writes = 0;
+	let failures = 0;
+
+	const insertQuery = db
+		.insert(comments)
+		.values({
+			author: sql.placeholder('author'),
+			content: sql.placeholder('content'),
+		})
+		.prepare();
+
+	await throttleExec(values, async ({ author, content }) => {
+		try {
+			const { lastInsertRowid } = await insertQuery.execute({
+				author,
+				content,
+			});
+			newRecords.push(Number(lastInsertRowid));
+			writes++;
+		} catch {
+			failures++;
+		}
+	});
+
+	return { newRecords, writes, failures };
+}
+
+/**
+ * Measures the read performance by querying inserted records.
+ * @param newRecords An array of IDs for the newly inserted records.
+ * @returns An object containing the number of reads and the reads per second.
+ */
+async function measureReads(newRecords: number[]) {
+	const readStart = Date.now();
+
+	const query = db.query.comments
+		.findFirst({ where: eq(comments.id, sql.placeholder('id')) })
+		.prepare();
+
+	let reads = 0;
+	await throttleExec(newRecords, async newId => {
+		await query.execute({ id: newId });
+		reads++;
+	});
+
+	const readTime = Date.now() - readStart;
+	const readsPerSecond = Math.round(reads / (readTime / 1000));
+
+	return { reads, readsPerSecond };
+}
+
+/**
+ * Deletes all comments from the database.
+ * @returns The time taken to delete the records in milliseconds.
+ */
+async function deleteComments() {
+	const deleteStart = Date.now();
+	await db.delete(comments).execute();
+	const deleteTime = Date.now() - deleteStart;
+
+	return deleteTime;
+}
+
+type TestResult = {
 	deleteTime: number;
 	error?: string;
 	failureRate: number;
@@ -34,97 +105,70 @@ let lastTest: {
 	writes: number;
 	writesPerSecond: number;
 	writeTime: number;
-} = {
-	deleteTime: 8509,
-	failureRate: 0,
-	reads: 0,
-	readsPerSecond: 8859,
-	writes: 50000,
-	writesPerSecond: 14160,
-	writeTime: 3531,
 };
 
-export default async function dbTest(refresh = false) {
-	return lastTest;
+/**
+ * Performs a database test by inserting, reading, and deleting comments.
+ * @returns The test results including write and read performance metrics.
+ */
+async function runTests(): Promise<TestResult | undefined> {
+	const values = Array.from({ length: 30000 }, () => ({
+		author: Math.random().toString(36).substring(7),
+		content: Math.random().toString(36).substring(7),
+	})) as Comment[];
+
+	try {
+		const start = Date.now();
+		const { newRecords, writes, failures } = await insertComments(values);
+		const writeTime = Date.now() - start;
+		const writesPerSecond = Math.round(writes / (writeTime / 1000));
+		const failureRate = Math.round((failures / writes) * 100);
+
+		const { reads, readsPerSecond } = await measureReads(newRecords);
+		const deleteTime = await deleteComments();
+
+		return {
+			deleteTime,
+			failureRate,
+			reads,
+			readsPerSecond,
+			writes,
+			writesPerSecond,
+			writeTime,
+		};
+	} catch (e: any) {
+		console.log(e);
+		return undefined;
+	}
 }
 
-// 	if (!refresh && lastTest) {
-// 		return lastTest;
-// 	}
+const map = new Map<string, unknown>();
+const swr = createStaleWhileRevalidateCache({
+	storage: {
+		getItem: (key: string) => {
+			return map.get(key);
+		},
+		setItem: async (key: string, value: unknown) => {
+			map.set(key, value);
+		},
+	},
+});
 
-// 	let deleteTime = 0;
-// 	let error = null;
-// 	let failureRate = 0;
-// 	let failures = 0;
-// 	let reads = 0;
-// 	let readsPerSecond = 0;
-// 	let writes = 0;
-// 	let writesPerSecond = 0;
-// 	let writeTime = 0;
+/**
+ * Executes database tests using a caching mechanism to avoid frequent re-execution.
+ * It leverages the stale-while-revalidate strategy to manage cache freshness.
+ * @returns The result of the database tests including performance metrics.
+ * @throws Throws an error if the test fails to run or returns an undefined result.
+ */
+export async function dbTest(): Promise<TestResult> {
+	const result = await swr('test', async () => await runTests(), {
+		maxTimeToLive: 1000 * 60 * 2, // 2 minutes
+		minTimeToStale: 1000 * 60 * 1, // 1 minute
+	});
 
-// 	try {
-// 		const values: Comment[] = Array.from(
-// 			{ length: 30000 },
-// 			() =>
-// 				({
-// 					author: Math.random().toString(36).substring(7),
-// 					content: Math.random().toString(36).substring(7),
-// 				}) as Comment,
-// 		);
+	if (result.value === undefined) {
+		throw new Error('Failed to run tests');
+	}
 
-// 		let start = Date.now();
-// 		const newRecords: number[] = [];
-// 		await throttleExec(values, async ({ author, content }) => {
-// 			try {
-// 				const { lastInsertRowid } = await db.insert(comments).values({
-// 					author,
-// 					content,
-// 				});
-// 				newRecords.push(Number(lastInsertRowid));
-// 				writes += 1;
-// 			} catch (e) {
-// 				failures += 1;
-// 			}
-// 		});
-// 		writeTime = Date.now() - start;
-// 		writesPerSecond = Math.round(writes / (writeTime / 1000));
-// 		const deleteStart = Date.now();
-// 		failureRate = Math.round((failures / writes) * 100);
-
-// 		// reads/sec
-// 		const readStart = Date.now();
-// 		await throttleExec(newRecords, async newId => {
-// 			await db.query.comments.findFirst({
-// 				where: eq(comments.id, newId),
-// 			});
-// 			reads += 1;
-// 		});
-// 		const readTime = Date.now() - readStart;
-// 		readsPerSecond = Math.round(reads / (readTime / 1000));
-
-// 		// delete records inserted to clean up
-// 		await throttleExec(newRecords, newId =>
-// 			db.delete(comments).where(eq(comments.id, newId)),
-// 		);
-// 		deleteTime = Date.now() - deleteStart;
-// 	} catch (e: any) {
-// 		console.error(e);
-// 		error = {
-// 			...{ message: e.message },
-// 			...serializeError(e),
-// 		};
-// 	}
-
-// 	lastTest = {
-// 		deleteTime,
-// 		error,
-// 		failureRate,
-// 		reads,
-// 		readsPerSecond,
-// 		writes,
-// 		writesPerSecond,
-// 		writeTime,
-// 	};
-
-// 	return lastTest;
-// }
+	return result.value;
+}
