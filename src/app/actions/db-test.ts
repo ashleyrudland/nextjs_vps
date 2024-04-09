@@ -23,7 +23,22 @@ export const throttleExec = async <T, R>(
 	}
 };
 
-export default async function dbTest() {
+let lastTest: {
+	deleteTime: number;
+	error?: string;
+	failureRate: number;
+	reads: number;
+	readsPerSecond: number;
+	writes: number;
+	writesPerSecond: number;
+	writeTime: number;
+} | null = null;
+
+export default async function dbTest(refresh = false) {
+	if (!refresh && lastTest) {
+		return lastTest;
+	}
+
 	let deleteTime = 0;
 	let error = null;
 	let failureRate = 0;
@@ -87,7 +102,7 @@ export default async function dbTest() {
 		};
 	}
 
-	return {
+	lastTest = {
 		deleteTime,
 		error,
 		failureRate,
@@ -97,4 +112,6 @@ export default async function dbTest() {
 		writesPerSecond,
 		writeTime,
 	};
+
+	return lastTest;
 }

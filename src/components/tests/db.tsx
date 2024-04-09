@@ -17,13 +17,13 @@ const DbTest = () => {
 	const [startTime, setStartTime] = useState(0);
 	const [runningTime, setRunningTime] = useState(0);
 
-	const runTest = useCallback(async () => {
+	const runTest = useCallback(async (refresh = false) => {
 		setRunningTime(0);
 		setStartTime(Date.now());
 		setLoading(true);
 		setError(null);
 		setResult(null);
-		dbTest()
+		dbTest(refresh)
 			.then(res => {
 				setResult(res);
 				setError(res.error);
@@ -113,7 +113,9 @@ const DbTest = () => {
 			}
 			footer={
 				loading ? null : (
-					<Button onClick={runTest}>Run test again</Button>
+					<Button onClick={() => runTest(true)}>
+						Run test again
+					</Button>
 				)
 			}
 		/>

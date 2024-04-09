@@ -43,10 +43,6 @@ const Capacity = () => {
 
 		let timeout: NodeJS.Timeout | null = null;
 
-		fetch(`/up?cacheBuster=${Math.random()}`)
-			.then(res => res.json())
-			.then(res => setUptime(res.uptime))
-			.catch(() => setError('Failed to fetch uptime'));
 		fetch(`/api/vm/device?cacheBuster=${Math.random()}`)
 			.then(res => res.json())
 			.then(res => setDevice(res))
@@ -83,9 +79,6 @@ const Capacity = () => {
 					{!loading && (
 						<>
 							<ul>
-								{uptime && (
-									<li>Uptime: {secondsToTime(uptime)}</li>
-								)}
 								{device && (
 									<>
 										<li>vCPUs: {device.cpuCount}</li>
@@ -132,7 +125,22 @@ const Capacity = () => {
 									</>
 								)}
 
-								{usage && <Chart data={usage} />}
+								{usage && usage.length > 0 && (
+									<>
+										<li>
+											CPU usage:{' '}
+											{usage[usage.length - 1].cpuUsage}%
+										</li>
+										<li>
+											Memory usage:{' '}
+											{
+												usage[usage.length - 1]
+													.memoryUsage
+											}
+											%
+										</li>
+									</>
+								)}
 							</ul>
 						</>
 					)}
