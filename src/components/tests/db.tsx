@@ -111,13 +111,14 @@ const DbTest = () => {
 					)}
 				</>
 			}
-			footer={
-				loading ? null : (
-					<Button onClick={() => runTest(true)}>
-						Run test again
-					</Button>
-				)
-			}
+
+			// viral tweet broke this on the baby VM
+			// so we need to disable it for now
+			// loading ? null : (
+			// footer={	<Button onClick={() => runTest(true)}>
+			// 		Run test again
+			// 	</Button>}
+			//
 		/>
 	);
 };
