@@ -121,7 +121,7 @@ async function runTests(): Promise<TestResult | undefined> {
 			.from(comments)
 			.execute();
 
-		const dbSizeInMb = (await stat(DB_PATH)).size / 1024 / 1024;
+		const dbSizeInMb = Math.round((await stat(DB_PATH)).size / 1024 / 1024);
 
 		return {
 			dbSizeInMb,
