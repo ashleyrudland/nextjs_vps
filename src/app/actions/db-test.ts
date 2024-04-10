@@ -1,6 +1,6 @@
 'use server';
 
-import { eq, sql } from 'drizzle-orm';
+import { count, eq, sql } from 'drizzle-orm';
 import chunk from 'lodash.chunk';
 import { comments } from '@/models/schema';
 import { db } from '@/utils/db';
@@ -84,24 +84,12 @@ async function measureReads(newRecords: number[]) {
 	return { reads, readsPerSecond };
 }
 
-/**
- * Deletes all comments from the database.
- * @returns The time taken to delete the records in milliseconds.
- */
-async function deleteComments() {
-	const deleteStart = Date.now();
-	await db.delete(comments).execute();
-	const deleteTime = Date.now() - deleteStart;
-
-	return deleteTime;
-}
-
 type TestResult = {
-	deleteTime: number;
 	error?: string;
 	failureRate: number;
 	reads: number;
 	readsPerSecond: number;
+	total: number;
 	writes: number;
 	writesPerSecond: number;
 	writeTime: number;
@@ -125,13 +113,17 @@ async function runTests(): Promise<TestResult | undefined> {
 		const failureRate = Math.round((failures / writes) * 100);
 
 		const { reads, readsPerSecond } = await measureReads(newRecords);
-		const deleteTime = await deleteComments();
+
+		const [{ count: total }] = await db
+			.select({ count: count() })
+			.from(comments)
+			.execute();
 
 		return {
-			deleteTime,
 			failureRate,
 			reads,
 			readsPerSecond,
+			total,
 			writes,
 			writesPerSecond,
 			writeTime,

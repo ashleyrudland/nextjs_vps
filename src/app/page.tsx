@@ -44,7 +44,6 @@ export default function Home() {
 			<div className="flex flex-col gap-6 sm:flex-row sm:gap-10">
 				<DbTest />
 				<Capacity />
-				<Images />
 			</div>
 		</main>
 	);

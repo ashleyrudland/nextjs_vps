@@ -82,24 +82,21 @@ const DbTest = () => {
 					)}
 					{!loading && result && (
 						<ul>
-							<li className="font-bold text-foreground">
+							<li>
+								Table size: {result.total.toLocaleString()}{' '}
+								records
+							</li>
+							<li>
 								Reads/sec:{' '}
 								{result.readsPerSecond.toLocaleString()}
 							</li>
-							<li>Writes: {result.writes.toLocaleString()}</li>
 							<li>
-								Write time: {result.writeTime.toLocaleString()}
-								ms
-							</li>
-							<li className="font-bold text-foreground">
 								Writes/sec:{' '}
 								{result.writesPerSecond.toLocaleString()}
 							</li>
-							<li>Failure rate: {result.failureRate}%</li>
-							<li>
-								Cleanup time:{' '}
-								{result.deleteTime.toLocaleString()}ms
-							</li>
+							{result.failureRate > 0 && (
+								<li>Failure rate: {result.failureRate}%</li>
+							)}
 						</ul>
 					)}
 					{error && (
