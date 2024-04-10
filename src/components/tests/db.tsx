@@ -90,7 +90,7 @@ const DbTest = () => {
 								Reads/sec:{' '}
 								{result.readsPerSecond.toLocaleString()}
 							</li>
-							<li>
+							<li className="font-medium">
 								Writes/sec:{' '}
 								{result.writesPerSecond.toLocaleString()}
 							</li>
