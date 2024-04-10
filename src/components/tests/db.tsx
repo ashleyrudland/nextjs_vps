@@ -83,6 +83,9 @@ const DbTest = () => {
 					{!loading && result && (
 						<ul>
 							<li>
+								DB size: {result.dbSizeInMb.toLocaleString()}MB
+							</li>
+							<li>
 								Table size: {result.total.toLocaleString()}{' '}
 								records
 							</li>

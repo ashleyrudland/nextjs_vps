@@ -1,9 +1,10 @@
 'use server';
 
+import { stat } from 'fs/promises';
 import { count, eq, sql } from 'drizzle-orm';
 import chunk from 'lodash.chunk';
 import { comments } from '@/models/schema';
-import { db } from '@/utils/db';
+import { DB_PATH, db } from '@/utils/db';
 import { Comment } from '@/models/types';
 
 import { createStaleWhileRevalidateCache } from 'stale-while-revalidate-cache';
@@ -85,6 +86,7 @@ async function measureReads(newRecords: number[]) {
 }
 
 type TestResult = {
+	dbSizeInMb: number;
 	error?: string;
 	failureRate: number;
 	reads: number;
@@ -119,7 +121,10 @@ async function runTests(): Promise<TestResult | undefined> {
 			.from(comments)
 			.execute();
 
+		const dbSizeInMb = (await stat(DB_PATH)).size / 1024 / 1024;
+
 		return {
+			dbSizeInMb,
 			failureRate,
 			reads,
 			readsPerSecond,

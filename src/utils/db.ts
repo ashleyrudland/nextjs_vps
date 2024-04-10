@@ -3,9 +3,10 @@ import Database from 'better-sqlite3';
 import * as schema from '../models/schema';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 
-const sqlite = new Database(
-	process.env.NODE_ENV === 'production' ? '/data/db.sqlite3' : './db.sqlite3',
-);
+export const DB_PATH =
+	process.env.NODE_ENV === 'production' ? '/data/db.sqlite3' : './db.sqlite3';
+
+const sqlite = new Database(DB_PATH);
 
 // Set some performance parameters for SQLite
 // found at: https://www.youtube.com/watch?v=B-_P0d1el2k
