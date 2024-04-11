@@ -83,7 +83,10 @@ const DbTest = () => {
 					{!loading && result && (
 						<ul>
 							<li>
-								DB size: {result.dbSizeInMb.toLocaleString()}MB
+								DB size:{' '}
+								{result.dbSizeInMb >= 1024
+									? `${(result.dbSizeInMb / 1024).toLocaleString(undefined, { maximumFractionDigits: 1 })}GB`
+									: `${result.dbSizeInMb.toLocaleString()}MB`}
 							</li>
 							<li>
 								Table size: {result.total.toLocaleString()}{' '}
