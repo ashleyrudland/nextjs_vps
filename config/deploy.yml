@@ -2,7 +2,7 @@
 service: server
 image: ashleyrudland87/ash
 servers:
-    - 195.201.25.22
+    - <%= ENV["VPS_HOSTNAME"] %>
 registry:
     username:
         - KAMAL_REGISTRY_USERNAME
