@@ -102,7 +102,7 @@ type TestResult = {
  * @returns The test results including write and read performance metrics.
  */
 async function runTests(): Promise<TestResult | undefined> {
-	const values = Array.from({ length: 100000 }, () => ({
+	const values = Array.from({ length: 350000 }, () => ({
 		author: Math.random().toString(36).substring(7),
 		content: Math.random().toString(36).substring(7),
 	})) as Comment[];
