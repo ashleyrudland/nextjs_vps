@@ -18,6 +18,7 @@ const sqlitePerfParams = {
 	mmap_size: 134217728, // 128 megabytes
 	journal_size_limit: 67108864, // 64 megabytes
 	cache_size: 2000,
+	busy_timeout: 30000,
 };
 
 for (const [key, value] of Object.entries(sqlitePerfParams)) {
