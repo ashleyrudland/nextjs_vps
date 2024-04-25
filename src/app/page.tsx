@@ -49,9 +49,8 @@ export default function Home() {
 				<p>
 					I love NextJS, but I don't like Vercels pricing. It seems
 					nuts to me and it seems many other people do too. So I spent
-					a few hours playing with this and{' '}
-					<span className="line-through">Digital Ocean</span> Hetzner
-					Cloud (€3.30/mo 🤣) to see what was possible.
+					a few hours playing with this and Hetzner Cloud (€3.30/mo
+					🤣) to see what was possible.
 				</p>
 
 				<div className="flex flex-col gap-6 sm:flex-row sm:gap-10">
